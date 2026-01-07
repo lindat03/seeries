@@ -1,15 +1,15 @@
-import { OmdbSearchItem, searchShows } from '@/src/api/omdb';
+import { TmdbTvSearchResult, getTmdbImageUrl, searchShows } from '@/src/api/tmdb';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Pressable, Text, View } from 'react-native';
 
 export default function SearchResults() {
     const params = useLocalSearchParams<{query: string}>();
     const query = useMemo(() => decodeURIComponent(params.query ?? ""), [params.query]);
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ['omdb-search', query],
+        queryKey: ['tmdb-search', query],
         queryFn: async () => {
             const res = await searchShows(query);
             return res.items;
@@ -19,6 +19,7 @@ export default function SearchResults() {
     })
 
     const items = data ?? [];
+
 
     return (
         <View>
@@ -42,7 +43,7 @@ export default function SearchResults() {
 
             <FlatList
                 data={items}
-                keyExtractor={(item) => item.imdbID}
+                keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => <ResultRow item={item} />}
                 ItemSeparatorComponent={() => (
                 <View style={{ height: 1, backgroundColor: "#eee" }} />
@@ -54,14 +55,19 @@ export default function SearchResults() {
     );
 }
 
-function ResultRow({item}: {item: OmdbSearchItem}) {
+function ResultRow({item}: {item: TmdbTvSearchResult}) {
+    const posterUrl = getTmdbImageUrl(item.poster_path)
+
     return (
         <Pressable
-            onPress={() => router.push(`/show/${item.imdbID}`)}
+            onPress={() => router.push(`/show/${item.id.toString()}`)}
             style={{ paddingVertical: 12 }}
         >
-            <Text style={{ fontSize: 16, fontWeight: "600" }}>{item.Title}</Text>
-            <Text style={{ color: "#666", marginTop: 2 }}>{item.Year}</Text>
+            { posterUrl && (
+                <Image source={{ uri: posterUrl }} style={{ width: 100, height: 150, marginBottom: 8 }} />
+            )}
+            <Text style={{ fontSize: 16, fontWeight: "600" }}>{item.name}</Text>
+            <Text style={{ color: "#666", marginTop: 2 }}>{item.first_air_date?.slice(0,4)}</Text>
         </Pressable>
     );
 }

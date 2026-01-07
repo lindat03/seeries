@@ -1,7 +1,7 @@
-export function getOmdbKey(): string {
-    const key = process.env.EXPO_PUBLIC_OMDB_KEY;
-    if (!key) {
-        throw new Error('Missing OMDB key');
+export function getTmdbReadToken(): string {
+    const token = process.env.EXPO_PUBLIC_TMDB_READ_TOKEN;
+    if (!token) {
+        throw new Error('Missing TMDB read token');
     }
-    return key;
+    return token;
 }
